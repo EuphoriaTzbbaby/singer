@@ -22,10 +22,19 @@ class Settings(BaseSettings):
     data_dir: Path = ROOT / "data"
     models_dir: Path = ROOT / "models"
     static_dir: Path = ROOT / "app" / "static"
+    cache_dir: Path = ROOT / ".cache"
 
     ffmpeg: str = "ffmpeg"
     ffprobe: str = "ffprobe"
     max_upload_mb: int = 500
+
+    # 人声分离
+    demucs_model: str = "htdemucs_ft"
+    demucs_device: str = "auto"  # auto / mps / cpu
+
+    @property
+    def torch_home(self) -> Path:
+        return self.cache_dir / "torch"
 
     @property
     def voices_dir(self) -> Path:
@@ -46,6 +55,10 @@ class Settings(BaseSettings):
             self.songs_dir,
             self.jobs_dir,
             self.models_dir,
+            self.cache_dir,
+            self.torch_home,
+            self.cache_dir / "xdg",
+            self.cache_dir / "huggingface",
         ):
             path.mkdir(parents=True, exist_ok=True)
 

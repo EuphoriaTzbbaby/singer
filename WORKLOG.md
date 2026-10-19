@@ -86,3 +86,34 @@
 - 操作：修改
 - 文件：`MUSTDO.md`、`README.md`
 - 说明：M0（脚手架 + 素材上传/转码）标记完成；M1 人声分离待开始。
+
+### 17:16 人声分离与混音模块
+- 操作：新增 / 修改
+- 文件：`app/pipeline/__init__.py`、`app/pipeline/separate.py`、`app/pipeline/mix.py`、`app/pipeline/cli.py`、`app/config.py`
+- 说明：
+  - 新增 Demucs 分离封装：默认 `htdemucs_ft`、双轨输出（vocals / no_vocals）；Apple Silicon 优先 MPS，失败自动回退 CPU；模型缓存固定到 `.cache/torch`，避免写用户主目录被系统拒绝。
+  - 新增混音模块：两轨增益、LUFS 归一化到 -14、峰值限制 -1 dBFS、输出 16bit WAV + MP3 320k。
+  - 新增命令行：`separate`、`mix`、`demo`，方便在接入 Web 任务队列前先验证整条链路。
+  - 配置新增 `cache_dir`、`torch_home`、`demucs_model`、`demucs_device`，启动时创建缓存目录。
+
+### 17:17 流水线实测与测试数据清理
+- 操作：测试 / 删除
+- 文件：`data/` 下测试数据（未入库）
+- 说明：
+  - 用 8 秒测试音频跑通：MPS 分离耗时 44.5 秒，生成 `vocals.wav` / `no_vocals.wav`；混音输出 8.0 秒 WAV 与 MP3，峰值 0.2219。
+  - 对比测试：同一段音频 CPU 约 47 秒、MPS 约 13 秒（直接调用 demucs 时），确认 MPS 可用。
+  - 通过 API 删除测试音色与歌曲，`data/` 已清空；同时验证 DELETE 接口正常。
+
+### 17:18 更新 README（M1 用法与状态）
+- 操作：修改
+- 文件：`README.md`
+- 说明：补充命令行分离/混音示例与实测耗时；进度表 M1 标记为“分离/混音已跑通”，等待 RVC 转换接入。
+
+### 17:19 调研 RVC 本地推理方案
+- 操作：调研（仅克隆到 `.cache/`，未入库）
+- 文件：`.cache/deps/rvc-mlx/`（gitignore 已覆盖）
+- 说明：
+  - 浅克隆 [RVC-MLX](https://github.com/Acelogic/Retrieval-based-Voice-Conversion-MLX)（12MB），确认其纯 MLX 推理入口为 `rvc-mlx-cli.py infer`。
+  - 它不能直接吃 RVC 的 `.pth`：需先用 `tools/convert_rvc_model.py` 转成 `.npz`，另需 `hubert_mlx.npz` 与 RMVPE 权重，并准备同名 `config.json` 指定 40k/48k 参数。
+  - 仓库依赖固定 `torch==2.4.0`、`faiss-cpu==1.7.4`、`numba==0.60.0`，与主环境 torch 2.14.1 冲突，后续应建独立子环境，避免污染 Demucs 环境。
+  - 尚未实际跑通推理：缺少可用的 RVC 模型（.pth + .index），等用户提供模型或完成一次 Colab 训练后验证。

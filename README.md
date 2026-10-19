@@ -4,7 +4,7 @@
 
 - 音频只在本机处理，不上传云端。
 - 当前技术路线：**RVC v2**（Colab 训练音色模型 + 本地推理）。
-- 当前进度：**M0 已完成**（脚手架 + 素材上传/转码）。RVC 推理、混音与任务队列正在开发。
+- 当前进度：**M0 已完成**；M1 的人声分离与混音已跑通，RVC 转换与任务队列正在开发。
 
 ## 快速开始
 
@@ -20,6 +20,23 @@
 1. **我的声音**：上传 10–30 分钟干净干声，勾选授权确认。
 2. **歌曲**：上传带原唱的完整歌曲，自动转码为 44.1kHz WAV。
 3. **生成翻唱**：待 RVC 推理接入后开放。
+
+## 命令行验证（M1）
+
+```bash
+# 分离人声 / 伴奏（输出到歌曲目录的 stems/）
+.venv/bin/python -m app.pipeline.cli separate data/songs/<歌曲ID>/source.wav
+
+# 混合并导出 WAV + MP3
+.venv/bin/python -m app.pipeline.cli mix \
+  data/songs/<歌曲ID>/stems/htdemucs_ft/source/vocals.wav \
+  data/songs/<歌曲ID>/stems/htdemucs_ft/source/no_vocals.wav \
+  data/songs/<歌曲ID>/outputs/mix.wav
+```
+
+- 默认使用 Apple Silicon 的 MPS；失败会自动回退 CPU。
+- Demucs 权重首次运行下载到 `.cache/torch`，不会写入用户主目录。
+- 实测：8 秒测试音频 MPS 分离约 45 秒；整首歌预计数分钟。
 
 ## 目录结构
 
@@ -45,7 +62,7 @@ MUSTDO.md          硬约束与里程碑
 | 阶段 | 内容 | 状态 |
 |---|---|---|
 | M0 | 脚手架、素材上传、转码、音色/歌曲管理 | ✅ 已完成 |
-| M1 | Demucs 人声分离 + 混音导出（CLI） | ⬜ 下一步 |
+| M1 | Demucs 人声分离 + 混音导出（CLI） | 🚧 分离/混音已跑通 |
 | M2 | RVC 本地推理（Apple Silicon MLX / MPS） | ⬜ |
 | M3 | Web UI：任务进度、试听、下载 | ⬜ |
 | M4 | 训练素材切片 + Colab 训练包 + 模型导入 | ⬜ |
