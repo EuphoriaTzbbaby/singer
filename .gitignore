@@ -1,0 +1,54 @@
+# macOS
+.DS_Store
+
+# Python
+.venv/
+venv/
+__pycache__/
+*.py[cod]
+*.egg-info/
+.pytest_cache/
+.ruff_cache/
+.mypy_cache/
+
+# 环境与密钥
+.env
+.env.*
+*.local
+
+# 模型权重（用下载脚本获取，不入库）
+models/
+*.pth
+*.pt
+*.index
+*.onnx
+*.safetensors
+*.ckpt
+
+# 音频与训练数据（体积大、含个人声音）
+data/
+uploads/
+outputs/
+workspace/
+*.wav
+*.mp3
+*.flac
+*.m4a
+*.aac
+*.ogg
+*.opus
+*.mp4
+
+# 缓存与日志
+.cache/
+logs/
+*.log
+
+# 前端依赖与构建产物
+node_modules/
+dist/
+build/
+
+# 系统文件
+*.swp
+Thumbs.db
