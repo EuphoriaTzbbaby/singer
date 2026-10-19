@@ -117,3 +117,47 @@
   - 它不能直接吃 RVC 的 `.pth`：需先用 `tools/convert_rvc_model.py` 转成 `.npz`，另需 `hubert_mlx.npz` 与 RMVPE 权重，并准备同名 `config.json` 指定 40k/48k 参数。
   - 仓库依赖固定 `torch==2.4.0`、`faiss-cpu==1.7.4`、`numba==0.60.0`，与主环境 torch 2.14.1 冲突，后续应建独立子环境，避免污染 Demucs 环境。
   - 尚未实际跑通推理：缺少可用的 RVC 模型（.pth + .index），等用户提供模型或完成一次 Colab 训练后验证。
+
+### 17:50 训练素材切片、质检与训练包
+- 操作：新增
+- 文件：`app/pipeline/dataset.py`
+- 说明：
+  - 新增能量/静音切片：`librosa.effects.split` 找语音区间，合并短间隙、在低能量点拆分长段，目标 3–10 秒。
+  - 每段做 -18 LUFS 响度归一化、峰值限制 -1 dBFS、10ms 淡入淡出，写 44.1kHz 单声道 16bit WAV。
+  - 质检报告包含源时长、切片数、总时长、最短/最长/平均、削波比例、静音比例和警告。
+  - 自动打包 `training_pack.zip`，内含 `dataset/*.wav`、`report.json`、`README.txt`。
+
+### 17:51 音色接口：追加素材、准备训练、训练包、模型导入
+- 操作：修改
+- 文件：`app/routers/voices.py`
+- 说明：
+  - 新增 `POST /api/voices/{id}/files`：分批追加素材，自动续编号，失败只清理本次文件。
+  - 新增 `POST /api/voices/{id}/prepare`：同步执行切片（后续迁入任务队列），写入 `dataset_report`。
+  - 新增 `GET /api/voices/{id}/training-pack`：下载 zip，文件名带音色名。
+  - 新增 `POST /api/voices/{id}/model`：导入 `.pth` + 可选 `.index`，校验扩展名与 PyTorch 文件头；同时提供 DELETE 重置。
+  - 素材变化会作废旧切片与训练包；所有 `{voice_id}` 路径加正则校验，防止路径穿越。
+  - 清理测试：非法 `.pth` 返回 400，路径穿越返回 404。
+
+### 17:52 前端训练操作
+- 操作：修改
+- 文件：`app/static/index.html`、`app/static/style.css`、`app/static/app.js`
+- 说明：
+  - 音色卡片增加「添加素材 / 准备训练 / 下载训练包 / 导入模型」操作，支持隐藏文件选择器与按钮忙碌状态。
+  - 列表展示已切片段数；训练包生成后才出现下载入口。
+  - 追加素材或重新上传后提示需要重新准备训练。
+
+### 17:53 训练流程实测
+- 操作：测试 / 删除
+- 文件：`data/` 下测试数据（未入库）
+- 说明：
+  - 用 84 秒合成音频测试：切片 12 段、总长 73.7 秒、平均 6.14 秒、静音占比 13.6%、训练包 70KB。
+  - 追加同一文件后总时长 168 秒，旧训练包返回 404；重新切片得到 24 段、147.4 秒。
+  - 用 zip 伪造 `.pth` 通过文件头校验并成功标记“模型就绪”；确认这只是导入链路测试，尚未做真实推理。
+  - 删除测试音色，`data/` 已清空，服务日志无异常。
+
+### 17:54 训练文档
+- 操作：新增 / 修改
+- 文件：`docs/TRAINING.md`、`README.md`
+- 说明：
+  - 新增完整训练指南：录制规范、切片报告解读、Applio Colab 参数（48k、Skip 切片、rmvpe、contentvec、300 epochs、batch 8）、导出与导入、常见问题、合规提醒。
+  - README 更新进度、训练流程入口、目录结构与文档索引。

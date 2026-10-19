@@ -4,7 +4,7 @@
 
 - 音频只在本机处理，不上传云端。
 - 当前技术路线：**RVC v2**（Colab 训练音色模型 + 本地推理）。
-- 当前进度：**M0 已完成**；M1 的人声分离与混音已跑通，RVC 转换与任务队列正在开发。
+- 当前进度：**M0 已完成**；M1 分离/混音、M4 的素材切片/训练包/模型导入已完成，RVC 推理与任务队列开发中。
 
 ## 快速开始
 
@@ -18,8 +18,10 @@
 打开浏览器进入 `http://127.0.0.1:8765`：
 
 1. **我的声音**：上传 10–30 分钟干净干声，勾选授权确认。
-2. **歌曲**：上传带原唱的完整歌曲，自动转码为 44.1kHz WAV。
-3. **生成翻唱**：待 RVC 推理接入后开放。
+2. **准备训练**：自动切片、质检，下载训练包；按 [docs/TRAINING.md](docs/TRAINING.md) 在 Colab 训练。
+3. **导入模型**：把训练产出的 `.pth` + `.index` 导入音色。
+4. **歌曲**：上传带原唱的完整歌曲，自动转码为 44.1kHz WAV。
+5. **生成翻唱**：待 RVC 推理接入后开放。
 
 ## 命令行验证（M1）
 
@@ -38,6 +40,17 @@
 - Demucs 权重首次运行下载到 `.cache/torch`，不会写入用户主目录。
 - 实测：8 秒测试音频 MPS 分离约 45 秒；整首歌预计数分钟。
 
+## 训练自己的音色
+
+RVC 训练需要 NVIDIA GPU，本机只做推理。完整步骤（录制要求、Colab 参数、模型导入、排错）见 **[docs/TRAINING.md](docs/TRAINING.md)**。
+
+简要流程：
+
+1. 录 10–30 分钟干净清唱 → 上传到「我的声音」。
+2. 「准备训练」→ 切片质检 →「下载训练包」。
+3. 在 [Applio Colab](https://colab.research.google.com/github/iahispano/applio/blob/main/assets/Applio_NoUI.ipynb) 用 T4 训练（约 1–2 小时）。
+4. 导出 `.pth` + `.index` → 在音色卡片「导入模型」。
+
 ## 目录结构
 
 ```
@@ -47,7 +60,9 @@ app/
   audio.py         ffmpeg 探测/转码
   storage.py       data/ 下的目录与 JSON 元数据
   routers/         voices、songs API
+  pipeline/        分离、混音、训练素材切片
   static/          原生 HTML/CSS/JS 界面
+docs/TRAINING.md   RVC 训练与模型导入完整指南
 scripts/
   setup.sh         创建环境
   dev.sh           启动开发服务
@@ -65,7 +80,7 @@ MUSTDO.md          硬约束与里程碑
 | M1 | Demucs 人声分离 + 混音导出（CLI） | 🚧 分离/混音已跑通 |
 | M2 | RVC 本地推理（Apple Silicon MLX / MPS） | ⬜ |
 | M3 | Web UI：任务进度、试听、下载 | ⬜ |
-| M4 | 训练素材切片 + Colab 训练包 + 模型导入 | ⬜ |
+| M4 | 训练素材切片 + Colab 训练包 + 模型导入 | 🚧 切片/导入已完成 |
 | M5 | 变调、降噪、失败重试、文档 | ⬜ |
 
 > RVC 训练需要 NVIDIA GPU，本机只做推理；训练在 Colab 完成，模型文件（`.pth` + `.index`）下载后导入。推理候选方案：[RVC-MLX](https://github.com/Acelogic/Retrieval-based-Voice-Conversion-MLX)（Apple Silicon 专用，第三方实现，需验证）。
@@ -86,3 +101,4 @@ MUSTDO.md          硬约束与里程碑
 
 - [WORKLOG.md](WORKLOG.md)：按时间记录所有文件变更。
 - [MUSTDO.md](MUSTDO.md)：必须遵守的规则与必须完成的里程碑。
+- [docs/TRAINING.md](docs/TRAINING.md)：录制、Colab 训练、模型导入与排错。

@@ -290,9 +290,26 @@ button:active:not(:disabled) { transform: translateY(1px); }
   background: rgba(13, 13, 18, 0.5);
   border-radius: 12px;
   padding: 12px 14px;
+  flex-wrap: wrap;
 }
 
-.item-main { min-width: 0; }
+.item-main { min-width: 0; flex: 1 1 220px; }
+
+.item-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  justify-content: flex-end;
+}
+
+a.ghost {
+  text-decoration: none;
+  display: inline-flex;
+  align-items: center;
+}
+
+.ghost.danger { color: var(--danger); }
+.ghost:disabled { opacity: 0.5; cursor: wait; }
 
 .item-title {
   font-size: 13.5px;

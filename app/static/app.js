@@ -3,6 +3,8 @@ const $ = (selector) => document.querySelector(selector);
 const state = {
   voices: [],
   songs: [],
+  appendVoice: null,
+  importVoice: null,
 };
 
 function escapeHtml(value) {
@@ -95,16 +97,28 @@ function renderVoices() {
     .map((voice) => {
       const badge = voice.has_model
         ? '<span class="tag ok">模型就绪</span>'
-        : '<span class="tag warn">待训练 / 导入模型</span>';
+        : '<span class="tag warn">待训练</span>';
       const count = Array.isArray(voice.files) ? voice.files.length : 0;
-      const sub = `${count} 个文件 · ${formatDuration(voice.total_duration)} · ${formatDate(voice.created_at)}`;
+      const report = voice.dataset_report;
+      let sub = `${count} 个文件 · ${formatDuration(voice.total_duration)}`;
+      if (report) sub += ` · 已切片 ${report.clip_count} 段`;
+      sub += ` · ${formatDate(voice.created_at)}`;
+      const pack = report
+        ? `<a class="ghost" href="/api/voices/${escapeHtml(voice.id)}/training-pack">下载训练包</a>`
+        : "";
       return `
         <div class="item" data-id="${escapeHtml(voice.id)}">
           <div class="item-main">
             <div class="item-title">${escapeHtml(voice.name)}${badge}</div>
             <div class="item-sub">${escapeHtml(sub)}</div>
           </div>
-          <button class="ghost" data-delete-voice="${escapeHtml(voice.id)}">删除</button>
+          <div class="item-actions">
+            <button class="ghost" data-add-voice="${escapeHtml(voice.id)}">添加素材</button>
+            <button class="ghost" data-prepare="${escapeHtml(voice.id)}">准备训练</button>
+            ${pack}
+            <button class="ghost" data-import-model="${escapeHtml(voice.id)}">导入模型</button>
+            <button class="ghost danger" data-delete-voice="${escapeHtml(voice.id)}">删除</button>
+          </div>
         </div>`;
     })
     .join("");
@@ -216,7 +230,97 @@ async function handleSongSubmit(event) {
   }
 }
 
+async function handleAppendFiles(event) {
+  const voiceId = state.appendVoice;
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (!voiceId || !files.length) return;
+
+  const data = new FormData();
+  files.forEach((file) => data.append("files", file));
+  toast("正在上传素材…");
+  try {
+    await api(`/api/voices/${voiceId}/files`, { method: "POST", body: data });
+    await loadVoices();
+    await refreshHealth();
+    toast("素材已追加，请重新准备训练");
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    state.appendVoice = null;
+  }
+}
+
+async function handleModelFiles(event) {
+  const voiceId = state.importVoice;
+  const files = Array.from(event.target.files || []);
+  event.target.value = "";
+  if (!voiceId || !files.length) return;
+
+  const pth = files.find((file) => file.name.toLowerCase().endsWith(".pth"));
+  const index = files.find((file) => file.name.toLowerCase().endsWith(".index"));
+  if (!pth) {
+    toast("请选择 .pth 模型文件", true);
+    return;
+  }
+
+  const data = new FormData();
+  data.append("pth", pth);
+  if (index) data.append("index", index);
+
+  try {
+    await api(`/api/voices/${voiceId}/model`, { method: "POST", body: data });
+    await loadVoices();
+    toast("模型已导入，可以开始生成");
+  } catch (error) {
+    toast(error.message, true);
+  } finally {
+    state.importVoice = null;
+  }
+}
+
+async function handlePrepare(voiceId, button) {
+  const original = button.textContent;
+  button.disabled = true;
+  button.textContent = "切片中…";
+  try {
+    const report = await api(`/api/voices/${voiceId}/prepare`, { method: "POST" });
+    await loadVoices();
+    const warning = report.warnings && report.warnings[0];
+    const summary = `已切片 ${report.clip_count} 段，共 ${formatDuration(report.total_seconds)}`;
+    toast(warning || summary, Boolean(warning));
+  } catch (error) {
+    button.disabled = false;
+    button.textContent = original;
+    toast(error.message, true);
+  }
+}
+
 async function handleListClick(event) {
+  const addButton = event.target.closest("[data-add-voice]");
+  if (addButton) {
+    state.appendVoice = addButton.dataset.addVoice;
+    const input = $("#append-input");
+    input.value = "";
+    input.click();
+    return;
+  }
+
+  const importButton = event.target.closest("[data-import-model]");
+  if (importButton) {
+    state.importVoice = importButton.dataset.importModel;
+    const input = $("#model-input");
+    input.value = "";
+    input.click();
+    return;
+  }
+
+  const prepareButton = event.target.closest("[data-prepare]");
+  if (prepareButton) {
+    await handlePrepare(prepareButton.dataset.prepare, prepareButton);
+    return;
+  }
+
   const voiceButton = event.target.closest("[data-delete-voice]");
   if (voiceButton) {
     const id = voiceButton.dataset.deleteVoice;
@@ -252,6 +356,8 @@ async function init() {
   $("#song-form").addEventListener("submit", handleSongSubmit);
   $("#voice-list").addEventListener("click", handleListClick);
   $("#song-list").addEventListener("click", handleListClick);
+  $("#append-input").addEventListener("change", handleAppendFiles);
+  $("#model-input").addEventListener("change", handleModelFiles);
 
   await refreshHealth();
   try {
