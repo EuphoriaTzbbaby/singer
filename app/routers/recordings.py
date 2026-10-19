@@ -64,11 +64,14 @@ async def upload_recording(
     token: str = Form(...),
     name: str = Form(..., min_length=1, max_length=60),
     consent: bool = Form(False),
+    mode: str = Form("standard"),
     file: UploadFile = File(...),
 ) -> dict:
     _check_token(token)
     if not consent:
         raise HTTPException(status_code=400, detail="必须确认声音为本人所有或已获授权")
+    if mode not in {"standard", "easy"}:
+        mode = "standard"
 
     voice_id = new_id("voice")
     root = voice_dir(voice_id)
@@ -90,6 +93,7 @@ async def upload_recording(
         "consent_at": now_iso(),
         "kind": "rvc_dataset",
         "source": "web_recording",
+        "recording_mode": mode,
         "files": saved,
         "total_duration": round(duration, 2),
         "has_model": False,
@@ -107,6 +111,7 @@ async def upload_recording(
         "name": meta["name"],
         "duration": meta["total_duration"],
         "status": "processing",
+        "mode": mode,
     }
 
 

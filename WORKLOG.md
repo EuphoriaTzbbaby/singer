@@ -232,3 +232,21 @@
   - 上传 84 秒测试音频立即返回 `processing`；约 2 秒后状态变为 `ready`，12 段、73.7 秒、警告正常。
   - 错误令牌查询状态返回 403；测试音色已删除，`data/voices` 为空。
   - `record.js`、`app.js` 通过 Node 语法检查；页面与静态资源在本地和远程 Host 下的 200/403 边界均符合预期。
+
+### 18:20 不会唱也能用的轻松模式
+- 操作：新增 / 修改
+- 文件：`app/static/record.html`、`app/static/record.css`、`app/static/record.js`、`app/routers/recordings.py`、`docs/RECORDING.md`、`docs/RECORDING_PROMPTS.md`、`docs/REMOTE_RECORDING.md`、`README.md`
+- 说明：
+  - 录音页增加「标准 · 约 10 分钟」与「轻松 · 约 5 分钟」两种模式。
+  - 轻松模式 13 段：哼鸣 2 次、元音 5 个、滑音、30 秒自然说话、两首从小就会的歌、收尾；总计约 5.1 分钟。
+  - 上传接口接收 `mode`，写入 meta 的 `recording_mode`，便于后续区分素材来源。
+  - 文档新增「不会唱怎么办」：RVC 学音色不学唱功；纯说话数据会让唱腔偏虚，所以保留哼鸣/元音/歌曲；给出“哼 → 元音 → 小声跟唱”的降级路径。
+  - README 与远程录音文档同步说明两种模式。
+
+### 18:21 轻松模式实测
+- 操作：测试 / 删除
+- 文件：`data/` 下测试数据（未入库）
+- 说明：
+  - `mode=easy` 上传 84 秒测试音频，返回 processing；后台切片完成后状态 ready，12 段、73.7 秒。
+  - meta 正确记录 `recording_mode: easy`；测试音色已删除。
+  - `record.js` 语法检查通过，录音页包含模式选择控件。

@@ -1,6 +1,6 @@
 const TOKEN = new URLSearchParams(location.search).get("token") || "";
 
-const STEPS = [
+const STANDARD_STEPS = [
   { stage: "准备", text: "站好，深呼吸，准备开始", seconds: 3 },
   { stage: "元音", text: "用舒服的中音唱「啊」，保持 5 秒", seconds: 6 },
   { stage: "元音", text: "再唱一次「啊」，音量保持平稳", seconds: 6 },
@@ -21,7 +21,26 @@ const STEPS = [
   { stage: "收尾", text: "再唱一句你最舒服的歌，就可以结束了", seconds: 20 },
 ];
 
-const TOTAL_SECONDS = STEPS.reduce((sum, step) => sum + step.seconds, 0);
+const EASY_STEPS = [
+  { stage: "准备", text: "站好，深呼吸，准备开始", seconds: 3 },
+  { stage: "哼鸣", text: "闭上嘴哼「嗯——」，保持 8 秒", seconds: 8 },
+  { stage: "哼鸣", text: "再哼一次，换高一点的感觉", seconds: 8 },
+  { stage: "元音", text: "张嘴唱「啊」，保持 5 秒", seconds: 6 },
+  { stage: "元音", text: "高一点再唱「啊」", seconds: 6 },
+  { stage: "元音", text: "唱「诶」，保持 5 秒", seconds: 6 },
+  { stage: "元音", text: "唱「衣」，保持 5 秒", seconds: 6 },
+  { stage: "元音", text: "唱「哦」，再唱「乌」，各 5 秒", seconds: 12 },
+  { stage: "滑音", text: "用「呜」从低滑到高，再滑回来", seconds: 8 },
+  { stage: "说话", text: "用平时说话的声音，说说你今天做了什么，不用好听", seconds: 30 },
+  { stage: "歌曲", text: "唱一首从小就会的歌，比如《小星星》，慢一点，不用好听", seconds: 100, flexible: true },
+  { stage: "歌曲", text: "再唱一首简单的歌，或者把刚才那首再唱一遍", seconds: 100, flexible: true },
+  { stage: "收尾", text: "再哼一句最舒服的旋律，就结束了", seconds: 15 },
+];
+
+const MODES = {
+  standard: { label: "标准", steps: STANDARD_STEPS },
+  easy: { label: "轻松", steps: EASY_STEPS },
+};
 
 const $ = (selector) => document.querySelector(selector);
 
@@ -42,7 +61,13 @@ const state = {
   wakeLock: null,
   pendingBlob: null,
   pendingName: "",
+  mode: "standard",
+  steps: STANDARD_STEPS,
 };
+
+function totalSecondsFor(steps) {
+  return steps.reduce((sum, step) => sum + step.seconds, 0);
+}
 
 function show(section) {
   ["intro", "studio", "done", "failed"].forEach((id) => {
@@ -83,18 +108,18 @@ function extensionFor(mime) {
 }
 
 function renderStep() {
-  const step = STEPS[state.stepIndex];
+  const step = state.steps[state.stepIndex];
   if (!step) return;
   $("#stage").textContent = step.stage;
   $("#prompt").textContent = step.text;
-  $("#step-count").textContent = `${state.stepIndex + 1} / ${STEPS.length}`;
+  $("#step-count").textContent = `${state.stepIndex + 1} / ${state.steps.length}`;
   $("#countdown").textContent = String(Math.ceil(step.seconds));
 }
 
 function nextStep() {
   if (!state.recording || state.finishing) return;
   state.stepIndex += 1;
-  if (state.stepIndex >= STEPS.length) {
+  if (state.stepIndex >= state.steps.length) {
     stopAndUpload(true);
     return;
   }
@@ -107,14 +132,14 @@ function tick() {
   const now = performance.now();
   const elapsed = (now - state.startedAt) / 1000;
   const inStep = (now - state.stepStart) / 1000;
-  const step = STEPS[state.stepIndex];
+  const step = state.steps[state.stepIndex];
   const remaining = Math.max(0, step.seconds - inStep);
 
   $("#elapsed").textContent = formatTime(elapsed);
   $("#countdown").textContent = String(Math.ceil(remaining));
 
   const stepFraction = Math.min(1, inStep / step.seconds);
-  const overall = (state.stepIndex + stepFraction) / STEPS.length;
+  const overall = (state.stepIndex + stepFraction) / state.steps.length;
   $("#progress").style.width = `${Math.min(100, overall * 100).toFixed(2)}%`;
 
   if (remaining <= 0 && !step.flexible) nextStep();
@@ -171,6 +196,9 @@ async function startRecording() {
     return;
   }
 
+  state.mode = document.querySelector('input[name="mode"]:checked')?.value || "standard";
+  state.steps = (MODES[state.mode] || MODES.standard).steps;
+
   try {
     state.stream = await navigator.mediaDevices.getUserMedia({
       audio: {
@@ -191,9 +219,14 @@ async function startRecording() {
       state.stream,
       state.mimeType ? { mimeType: state.mimeType } : undefined,
     );
-  } catch (error) {
-    setIntroError(`创建录音器失败：${error.message}`);
-    return;
+  } catch {
+    try {
+      state.recorder = new MediaRecorder(state.stream);
+      state.mimeType = state.recorder.mimeType || state.mimeType;
+    } catch (error) {
+      setIntroError(`创建录音器失败：${error.message}`);
+      return;
+    }
   }
 
   state.chunks = [];
@@ -293,6 +326,7 @@ async function upload() {
   data.append("token", TOKEN);
   data.append("name", state.pendingName);
   data.append("consent", "true");
+  data.append("mode", state.mode);
   data.append("file", state.pendingBlob, `recording.${extension}`);
 
   try {
@@ -404,9 +438,16 @@ function init() {
     }
   });
 
-  if (TOTAL_SECONDS) {
-    $("#intro-hint").textContent = `全程约 ${Math.round(TOTAL_SECONDS / 60)} 分钟，可以随时点“结束并上传”。手机请保持屏幕常亮。`;
-  }
+  document.querySelectorAll('input[name="mode"]').forEach((input) => {
+    input.addEventListener("change", updateIntroHint);
+  });
+  updateIntroHint();
+}
+
+function updateIntroHint() {
+  const mode = document.querySelector('input[name="mode"]:checked')?.value || "standard";
+  const total = totalSecondsFor((MODES[mode] || MODES.standard).steps);
+  $("#intro-hint").textContent = `全程约 ${Math.round(total / 60)} 分钟，可以随时点“结束并上传”。需要麦克风权限，手机请保持屏幕常亮。`;
 }
 
 init();
