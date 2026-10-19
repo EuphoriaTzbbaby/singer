@@ -1,0 +1,118 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Singer · 用你的声音唱</title>
+    <link rel="stylesheet" href="/static/style.css" />
+  </head>
+  <body>
+    <header class="top">
+      <div class="brand">
+        <span class="logo">♪</span>
+        <span>Singer</span>
+        <small>用你的声音唱</small>
+      </div>
+      <div id="health" class="pill">连接中…</div>
+    </header>
+
+    <main>
+      <section class="hero">
+        <p class="eyebrow">LOCAL AI COVER</p>
+        <h1>把你的声音，<em>唱进歌里</em></h1>
+        <p class="lead">
+          上传干净的演唱素材，使用训练好的 RVC 模型，选择一首歌，生成属于你的翻唱。
+          所有音频只在这台电脑上处理。
+        </p>
+        <ol class="steps">
+          <li><b>1</b> 上传声音素材</li>
+          <li><b>2</b> 训练并导入模型</li>
+          <li><b>3</b> 选歌生成翻唱</li>
+        </ol>
+      </section>
+
+      <section class="grid">
+        <article class="card">
+          <header class="card-head">
+            <h2>我的声音</h2>
+            <span class="hint">建议 10–30 分钟干声</span>
+          </header>
+
+          <form id="voice-form" class="form">
+            <label>
+              音色名称
+              <input name="name" type="text" maxlength="60" placeholder="例如：我的声音" required />
+            </label>
+            <label class="file-field">
+              训练素材（可多选）
+              <input name="files" type="file" accept=".wav,.mp3,.flac,.m4a,.aac,.ogg,.opus" multiple required />
+              <span class="file-hint">支持 WAV / MP3 / FLAC / M4A；无伴奏、无混响效果最好</span>
+            </label>
+            <label class="check">
+              <input name="consent" type="checkbox" required />
+              <span>我确认这是<strong>本人</strong>的声音，或已获得声音所有者的明确授权</span>
+            </label>
+            <button type="submit" class="primary">上传声音素材</button>
+          </form>
+
+          <div class="list" id="voice-list"></div>
+        </article>
+
+        <article class="card">
+          <header class="card-head">
+            <h2>歌曲</h2>
+            <span class="hint">带原唱的完整歌曲</span>
+          </header>
+
+          <form id="song-form" class="form">
+            <div class="row">
+              <label>
+                歌名
+                <input name="title" type="text" maxlength="120" placeholder="例如：晴天" />
+              </label>
+              <label>
+                歌手
+                <input name="artist" type="text" maxlength="120" placeholder="例如：周杰伦" />
+              </label>
+            </div>
+            <label class="file-field">
+              歌曲文件
+              <input name="file" type="file" accept=".wav,.mp3,.flac,.m4a,.aac,.ogg,.opus" required />
+              <span class="file-hint">上传后会自动分离人声与伴奏</span>
+            </label>
+            <button type="submit" class="primary">上传歌曲</button>
+          </form>
+
+          <div class="list" id="song-list"></div>
+        </article>
+      </section>
+
+      <section class="card generate">
+        <header class="card-head">
+          <h2>生成翻唱</h2>
+          <span class="hint">下一步接入 RVC 推理</span>
+        </header>
+        <div class="row">
+          <label>
+            音色
+            <select id="pick-voice"><option value="">选择已就绪的音色</option></select>
+          </label>
+          <label>
+            歌曲
+            <select id="pick-song"><option value="">选择歌曲</option></select>
+          </label>
+        </div>
+        <button id="generate" class="primary" disabled>开始生成</button>
+        <p class="note">当前版本先完成素材上传与预处理，RVC 推理与混音将在下一阶段开放。</p>
+      </section>
+    </main>
+
+    <footer>
+      <span>本地处理 · 不上传云端</span>
+      <span>仅限本人或已授权声音 · 生成内容请标注 AI</span>
+    </footer>
+
+    <div id="toast" class="toast" hidden></div>
+    <script src="/static/app.js"></script>
+  </body>
+</html>

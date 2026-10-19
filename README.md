@@ -1,0 +1,71 @@
+# Singer · 用你的声音唱
+
+本地运行的 AI 翻唱工具：上传你的演唱素材，选择一首歌，生成以你的音色演唱的版本。
+
+- 音频只在本机处理，不上传云端。
+- 当前技术路线：**RVC v2**（Colab 训练音色模型 + 本地推理）。
+- 当前进度：**M0 已完成**（脚手架 + 素材上传/转码）。RVC 推理、混音与任务队列正在开发。
+
+## 快速开始
+
+要求：macOS（Apple Silicon）、`ffmpeg`、`uv`。首次安装约 1–2GB 依赖。
+
+```bash
+./scripts/setup.sh     # 安装 Python 3.11 与依赖（torch / demucs / fastapi）
+./scripts/dev.sh       # 启动 http://127.0.0.1:8765
+```
+
+打开浏览器进入 `http://127.0.0.1:8765`：
+
+1. **我的声音**：上传 10–30 分钟干净干声，勾选授权确认。
+2. **歌曲**：上传带原唱的完整歌曲，自动转码为 44.1kHz WAV。
+3. **生成翻唱**：待 RVC 推理接入后开放。
+
+## 目录结构
+
+```
+app/
+  main.py          FastAPI 入口
+  config.py        路径与端口配置
+  audio.py         ffmpeg 探测/转码
+  storage.py       data/ 下的目录与 JSON 元数据
+  routers/         voices、songs API
+  static/          原生 HTML/CSS/JS 界面
+scripts/
+  setup.sh         创建环境
+  dev.sh           启动开发服务
+data/              运行后生成：voices / songs / jobs（不入库）
+models/            RVC 模型与索引（不入库）
+WORKLOG.md         每次文件变更记录
+MUSTDO.md          硬约束与里程碑
+```
+
+## 技术路线
+
+| 阶段 | 内容 | 状态 |
+|---|---|---|
+| M0 | 脚手架、素材上传、转码、音色/歌曲管理 | ✅ 已完成 |
+| M1 | Demucs 人声分离 + 混音导出（CLI） | ⬜ 下一步 |
+| M2 | RVC 本地推理（Apple Silicon MLX / MPS） | ⬜ |
+| M3 | Web UI：任务进度、试听、下载 | ⬜ |
+| M4 | 训练素材切片 + Colab 训练包 + 模型导入 | ⬜ |
+| M5 | 变调、降噪、失败重试、文档 | ⬜ |
+
+> RVC 训练需要 NVIDIA GPU，本机只做推理；训练在 Colab 完成，模型文件（`.pth` + `.index`）下载后导入。推理候选方案：[RVC-MLX](https://github.com/Acelogic/Retrieval-based-Voice-Conversion-MLX)（Apple Silicon 专用，第三方实现，需验证）。
+
+## 音频规格
+
+- 统一 44.1kHz；歌曲双声道，训练素材单声道。
+- 训练素材：无伴奏、无混响、无爆音，单人，建议 10–30 分钟。
+- 成品：WAV 16bit + MP3 320k，响度约 -14 LUFS，峰值 ≤ -1 dBTP。
+
+## 合规
+
+- 仅允许本人或已获明确授权的声音；界面已加授权勾选。
+- 生成内容应标注“AI 生成 / 声音转换”，不得用于冒充、诈骗、诽谤。
+- 歌曲版权由使用者负责；本项目不内置曲库。
+
+## 文档
+
+- [WORKLOG.md](WORKLOG.md)：按时间记录所有文件变更。
+- [MUSTDO.md](MUSTDO.md)：必须遵守的规则与必须完成的里程碑。

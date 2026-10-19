@@ -1,0 +1,31 @@
+[project]
+name = "singer"
+version = "0.1.0"
+description = "本地 AI 翻唱工具：用你自己的声音唱任意歌曲"
+requires-python = ">=3.11,<3.13"
+dependencies = [
+    "fastapi>=0.115.0",
+    "uvicorn[standard]>=0.30.0",
+    "python-multipart>=0.0.9",
+    "pydantic>=2.8.0",
+    "pydantic-settings>=2.4.0",
+    "soundfile>=0.12.1",
+    "numpy>=1.26.0,<2.0",
+]
+
+[project.optional-dependencies]
+audio = [
+    "torch>=2.4.0",
+    "torchaudio>=2.4.0",
+    "demucs>=4.0.1",
+    "librosa>=0.10.2",
+    "pyloudnorm>=0.1.1",
+    "scipy>=1.13.0",
+]
+dev = [
+    "pytest>=8.0",
+    "ruff>=0.6",
+]
+
+[tool.uv]
+package = false

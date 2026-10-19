@@ -1,6 +1,10 @@
 # macOS
 .DS_Store
 
+# uv 缓存与本机 Python 安装
+.cache/
+.python/
+
 # Python
 .venv/
 venv/
