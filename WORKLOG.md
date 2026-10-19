@@ -250,3 +250,12 @@
   - `mode=easy` 上传 84 秒测试音频，返回 processing；后台切片完成后状态 ready，12 段、73.7 秒。
   - meta 正确记录 `recording_mode: easy`；测试音色已删除。
   - `record.js` 语法检查通过，录音页包含模式选择控件。
+
+### 18:27 澄清：本来就是浏览器录音
+- 操作：修改
+- 文件：`app/static/index.html`、`app/static/app.js`、`docs/REMOTE_RECORDING.md`、`README.md`
+- 说明：
+  - 「手机录音」按钮改名为「网页录音」，链接面板增加「打开」按钮，可直接在本机浏览器开始录音。
+  - 文档明确：录音使用浏览器 MediaRecorder，桌面 Chrome/Edge/Safari 同样可用，不需要手机；手机只是为了环境安静、麦克风更近。
+  - 补充桌面录音注意事项：macOS 麦克风权限、用耳机麦、保持标签页前台、关闭系统降噪。
+  - 保留原有限制说明：跨设备（非 localhost）必须 HTTPS，手机通过局域网 http 地址无法获得麦克风权限。

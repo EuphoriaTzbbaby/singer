@@ -4,7 +4,7 @@
 
 - 音频只在本机处理，不上传云端。
 - 当前技术路线：**RVC v2**（Colab 训练音色模型 + 本地推理）。
-- 当前进度：**M0 已完成**；M1 分离/混音、M4 素材切片/训练包/模型导入、手机录音页已完成，RVC 推理与任务队列开发中。
+- 当前进度：**M0 已完成**；M1 分离/混音、M4 素材切片/训练包/模型导入、网页录音页已完成，RVC 推理与任务队列开发中。
 
 ## 快速开始
 
@@ -17,18 +17,18 @@
 
 打开浏览器进入 `http://127.0.0.1:8765`：
 
-1. **我的声音**：上传 10–15 分钟干净干声（最低 5 分钟），勾选授权确认；也可以点「手机录音」用网址录。不会唱可选「轻松 · 约 5 分钟」。
+1. **我的声音**：上传 10–15 分钟干净干声（最低 5 分钟），勾选授权确认；也可以点「网页录音」用网址录。不会唱可选「轻松 · 约 5 分钟」。
 2. **准备训练**：自动切片、质检，下载训练包；按 [docs/TRAINING.md](docs/TRAINING.md) 在 Colab 训练。
 3. **导入模型**：把训练产出的 `.pth` + `.index` 导入音色。
 4. **歌曲**：上传带原唱的完整歌曲，自动转码为 44.1kHz WAV。
 5. **生成翻唱**：待 RVC 推理接入后开放。
 
-## 手机 / 远程录音
+## 网页 / 远程录音
 
-Singer 自带引导式录音页：打开链接 → 跟着提示唱 → 音频自动保存到本机并切片。
+Singer 自带引导式录音页：打开链接 → 跟着提示唱 → 音频自动保存到本机并切片。它用的是浏览器录音，**桌面和手机都能用**，不是手机专属。
 
-- **同一台 Mac**：主界面点「手机录音」，复制链接打开即可。
-- **手机 / 其他设备**：浏览器要求 HTTPS 才能用麦克风。用 `cloudflared tunnel --url http://127.0.0.1:8765` 生成临时 HTTPS 地址，再打开 `/record?token=...`。
+- **本机桌面**：主界面点「网页录音」→「打开」，允许麦克风即可（localhost 不需要 HTTPS）。
+- **手机 / 其他设备**：只是为了环境更安静、麦克风更近；跨设备时浏览器要求 HTTPS，用 `cloudflared tunnel --url http://127.0.0.1:8765` 生成临时 HTTPS 地址，再打开 `/record?token=...`。
 - 访问令牌保存在 `data/record_token.txt`，不要公开分享。
 - 完整步骤、Tailscale 方案与排错见 **[docs/REMOTE_RECORDING.md](docs/REMOTE_RECORDING.md)**。
 
@@ -70,7 +70,7 @@ app/
   storage.py       data/ 下的目录与 JSON 元数据
   routers/         voices、songs、recordings API
   pipeline/        分离、混音、训练素材切片
-  static/          主界面 + 手机录音页
+  static/          主界面 + 录音页
 docs/              训练、录音、远程录音文档
 scripts/
   setup.sh         创建环境
@@ -113,4 +113,4 @@ MUSTDO.md          硬约束与里程碑
 - [docs/TRAINING.md](docs/TRAINING.md)：录制、Colab 训练、模型导入与排错。
 - [docs/RECORDING.md](docs/RECORDING.md)：录什么声音、10 分钟模板、绝对不要做的事。
 - [docs/RECORDING_PROMPTS.md](docs/RECORDING_PROMPTS.md)：引导录音的逐条提示语与语音教练提示词。
-- [docs/REMOTE_RECORDING.md](docs/REMOTE_RECORDING.md)：用网址在手机录音、HTTPS 隧道与安全注意事项。
+- [docs/REMOTE_RECORDING.md](docs/REMOTE_RECORDING.md)：用网址录音、HTTPS 隧道与安全注意事项。

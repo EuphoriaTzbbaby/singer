@@ -363,10 +363,10 @@ async function toggleRecordLink() {
     const note = $("#record-link-note");
     if (data.localhost) {
       note.textContent =
-        "这是本机地址，手机打不开。跨设备录音请用 HTTPS 隧道，步骤见 docs/REMOTE_RECORDING.md。";
-      note.classList.add("bad");
+        "本机浏览器可以直接点「打开」录音；手机或其他设备需要 HTTPS 隧道，步骤见 docs/REMOTE_RECORDING.md。";
+      note.classList.remove("bad");
     } else {
-      note.textContent = "用手机浏览器打开这个链接；录音会直接保存到这台电脑。";
+      note.textContent = "在桌面或手机浏览器打开这个链接都可以；录音会直接保存到这台电脑。";
       note.classList.remove("bad");
     }
     box.hidden = false;
@@ -388,6 +388,11 @@ async function copyRecordUrl() {
   }
 }
 
+function openRecordUrl() {
+  const url = $("#record-url").value;
+  if (url) window.open(url, "_blank", "noopener");
+}
+
 async function init() {
   $("#voice-form").addEventListener("submit", handleVoiceSubmit);
   $("#song-form").addEventListener("submit", handleSongSubmit);
@@ -397,6 +402,7 @@ async function init() {
   $("#model-input").addEventListener("change", handleModelFiles);
   $("#record-link-btn").addEventListener("click", toggleRecordLink);
   $("#copy-record-url").addEventListener("click", copyRecordUrl);
+  $("#open-record-url").addEventListener("click", openRecordUrl);
 
   await refreshHealth();
   try {
