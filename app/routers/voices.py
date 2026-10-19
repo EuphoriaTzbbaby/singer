@@ -24,7 +24,7 @@ from ..storage import (
 
 router = APIRouter(prefix="/api/voices", tags=["voices"])
 
-MIN_TRAIN_SECONDS = 60
+MIN_TRAIN_SECONDS = 300
 RECOMMENDED_SECONDS = 600
 ID_PATTERN = re.compile(r"^[A-Za-z0-9_-]+$")
 
@@ -40,9 +40,9 @@ def _root_for(voice_id: str) -> Path:
 
 def _warnings(total_duration: float) -> list[str]:
     if total_duration < MIN_TRAIN_SECONDS:
-        return ["素材不足 1 分钟，无法训练；建议至少 10 分钟干净人声。"]
+        return ["素材不足 5 分钟，训练效果会很有限；建议补到 10–15 分钟。"]
     if total_duration < RECOMMENDED_SECONDS:
-        return ["素材少于 10 分钟，可以训练但相似度可能有限。"]
+        return ["素材少于 10 分钟，可以训练；10–15 分钟效果更稳。"]
     return []
 
 

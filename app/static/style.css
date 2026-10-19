@@ -171,6 +171,46 @@ main {
 
 .hint { color: var(--muted); font-size: 11.5px; }
 
+.head-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  flex-wrap: wrap;
+  justify-content: flex-end;
+}
+
+.link-box {
+  border: 1px solid var(--line);
+  background: rgba(13, 13, 18, 0.55);
+  border-radius: 12px;
+  padding: 14px;
+  margin-bottom: 16px;
+  font-size: 12.5px;
+  color: var(--muted);
+}
+
+.link-box p { margin: 0 0 10px; line-height: 1.6; }
+
+.link-row {
+  display: flex;
+  gap: 8px;
+}
+
+.link-row input {
+  flex: 1;
+  min-width: 0;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 8px;
+  color: var(--text);
+  padding: 9px 10px;
+  font-size: 12px;
+  font-family: ui-monospace, SFMono-Regular, Menlo, monospace;
+}
+
+.link-note { margin: 10px 0 0 !important; font-size: 11.5px; }
+.link-note.bad { color: #ffcf7a; }
+
 .form { display: grid; gap: 14px; }
 
 label {

@@ -170,3 +170,65 @@
   - 列出禁忌：说话/咳嗽/清嗓、伴奏漏音、混响降噪修音、喊叫超音域、重复同一句、朗读代替唱歌。
   - 补充文件命名、每段留 1 秒安静、分批“添加素材”、录完自检与版权提醒。
   - TRAINING.md 与 README 增加录音清单入口。
+
+### 18:05 录音提示词与时长建议调整
+- 操作：新增 / 修改
+- 文件：`docs/RECORDING_PROMPTS.md`、`docs/RECORDING.md`、`docs/TRAINING.md`、`README.md`、`app/static/index.html`、`app/routers/voices.py`、`app/pipeline/dataset.py`
+- 说明：
+  - 新增逐条录音提示词：18 项带时长的引导脚本、5 分钟速通版、可直接交给语音/文字教练的系统提示词、开始与结束话术。
+  - 时长建议由“10–30 分钟”调整为 **5–15 分钟，10–15 分钟最佳**；超过 20 分钟收益明显变小。
+  - 同步修改界面提示、README、TRAINING 与切片警告阈值：不足 5 分钟提示效果有限，5–10 分钟提示可训练，10 分钟以上不再警告。
+
+### 18:08 远程录音后端
+- 操作：新增 / 修改
+- 文件：`app/routers/recordings.py`、`app/config.py`、`app/audio.py`、`app/main.py`
+- 说明：
+  - 新增 `GET /record?token=` 录音页（令牌错误返回 403）。
+  - 新增 `POST /api/recordings`：令牌 + 授权校验；保存上传音频、转 44.1kHz 单声道、自动切片、生成训练包、写入音色 meta。
+  - 新增 `GET /api/record-link`：按当前 Host 返回带令牌的录音链接。
+  - 录音令牌自动生成到 `data/record_token.txt`，也可用 `SINGER_RECORD_TOKEN` 指定；启动日志打印录音页地址。
+  - 音频格式增加 `.webm`、`.mp4`，兼容 Chrome/Safari 的 MediaRecorder 输出。
+
+### 18:09 引导式录音页
+- 操作：新增
+- 文件：`app/static/record.html`、`app/static/record.css`、`app/static/record.js`
+- 说明：
+  - 移动端优先页面：输入音色名、授权勾选、开始录音。
+  - 18 段提示自动计时：准备 3 秒、元音、滑音、音阶、5 段歌曲、收尾；歌曲段不强制自动切换，可点「下一项」。
+  - MediaRecorder 录音，显示倒计时、总进度、麦克风电平与已录时长；结束时自动上传并展示切片结果。
+  - 处理 HTTPS/localhost 检查、麦克风权限错误、Wake Lock、上传失败重试与 bfcache 拦截。
+  - 首次录音带 3 秒准备静音，切片时会被自然丢弃。
+
+### 18:10 远程访问边界与本机入口
+- 操作：修改
+- 文件：`app/main.py`、`app/config.py`、`app/static/index.html`、`app/static/style.css`、`app/static/app.js`
+- 说明：
+  - 新增 `RemoteAccessGuard`：非 localhost 的 Host 只允许 `/record`、`/api/recordings` 和录音页静态资源，其余 403；可用 `SINGER_ALLOW_REMOTE_ADMIN=1` 放开（不推荐）。
+  - 主界面「我的声音」增加「手机录音」按钮，展示录音链接与复制按钮，并提示 localhost 链接手机无法访问。
+  - README 增加手机/远程录音说明；MUSTDO 增加令牌管理与远程访问边界两条硬约束。
+
+### 18:11 远程录音实测与文档
+- 操作：测试 / 新增
+- 文件：`docs/REMOTE_RECORDING.md`
+- 说明：
+  - `/record?token=` 返回 200，错误令牌 403；`/api/record-link` 正常返回本机链接。
+  - 用 84 秒测试音频调用 `/api/recordings`：创建音色、12 段切片、73.7 秒可用演唱，并返回“不足 5 分钟”警告；测试后已删除。
+  - 伪造 `Host: demo.trycloudflare.com` 验证：`/api/health`、`/`、`/static/app.js`、`/api/record-link` 均 403；录音页、录音页 CSS/JS 200；上传接口可到达（缺字段返回 422）。
+  - 新增远程录音文档：Cloudflare 临时隧道、Tailscale、令牌位置、HTTPS 限制、支持格式、常见问题与合规说明。
+
+### 18:12 远程上传改为后台切片
+- 操作：修改
+- 文件：`app/routers/recordings.py`、`app/static/record.js`、`docs/REMOTE_RECORDING.md`
+- 说明：
+  - 发现 10 分钟录音同步切片约需 1–2 分钟，可能撞上 Cloudflare 隧道的 100 秒超时。
+  - 上传接口改为只保存/转码并立即返回 `processing`，切片交给 BackgroundTasks 在响应后执行。
+  - 新增 `GET /api/recordings/{voice_id}/status`（同样校验令牌），页面轮询显示切片结果。
+  - 录音页在等待期间显示“正在切片和质检”，失败时提示回主界面重试。
+
+### 18:13 后台切片实测与清理
+- 操作：测试 / 删除
+- 文件：`data/` 下测试数据（未入库）
+- 说明：
+  - 上传 84 秒测试音频立即返回 `processing`；约 2 秒后状态变为 `ready`，12 段、73.7 秒、警告正常。
+  - 错误令牌查询状态返回 403；测试音色已删除，`data/voices` 为空。
+  - `record.js`、`app.js` 通过 Node 语法检查；页面与静态资源在本地和远程 Host 下的 200/403 边界均符合预期。

@@ -11,7 +11,18 @@ from pathlib import Path
 
 from .config import settings
 
-AUDIO_EXTS = {".wav", ".mp3", ".flac", ".m4a", ".aac", ".ogg", ".opus", ".wma"}
+AUDIO_EXTS = {
+    ".wav",
+    ".mp3",
+    ".flac",
+    ".m4a",
+    ".aac",
+    ".ogg",
+    ".opus",
+    ".wma",
+    ".webm",
+    ".mp4",
+}
 
 
 class AudioError(RuntimeError):

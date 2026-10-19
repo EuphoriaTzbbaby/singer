@@ -1,0 +1,97 @@
+<!doctype html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <meta name="theme-color" content="#0d0d12" />
+    <title>Singer · 录音</title>
+    <link rel="stylesheet" href="/static/style.css" />
+    <link rel="stylesheet" href="/static/record.css" />
+  </head>
+  <body class="record-page">
+    <header class="record-top">
+      <div class="brand">
+        <span class="logo">♪</span>
+        <span>Singer</span>
+        <small>录音</small>
+      </div>
+      <span class="pill" id="conn">准备中</span>
+    </header>
+
+    <main class="record-main">
+      <section id="intro" class="record-card">
+        <p class="eyebrow">VOICE RECORDING</p>
+        <h1>录一段你的声音</h1>
+        <p class="lead">
+          大约 10 分钟，跟着提示唱就好。不用唱得好，只要是你真实、放松的声音。
+          录音只保存在这台电脑上。
+        </p>
+
+        <label class="record-label">
+          音色名称
+          <input id="name" type="text" maxlength="60" placeholder="例如：我的声音" autocomplete="off" />
+        </label>
+
+        <label class="check">
+          <input id="consent" type="checkbox" />
+          <span>我确认这是<strong>本人</strong>的声音，或已获得声音所有者的明确授权</span>
+        </label>
+
+        <button id="start" class="primary record-start">开始录音</button>
+        <p class="record-hint" id="intro-hint">
+          需要麦克风权限。手机请保持屏幕常亮，中途可以点“下一项”。
+        </p>
+        <p class="record-error" id="intro-error" hidden></p>
+      </section>
+
+      <section id="studio" class="record-card" hidden>
+        <div class="studio-head">
+          <span class="stage-badge" id="stage">元音</span>
+          <span class="step-count" id="step-count">1 / 12</span>
+        </div>
+
+        <p class="record-prompt" id="prompt">用舒服的中音唱「啊」，保持 5 秒</p>
+
+        <div class="countdown" id="countdown">6</div>
+
+        <div class="record-progress"><span id="progress"></span></div>
+
+        <div class="level"><span id="level-bar"></span></div>
+
+        <div class="record-meta">
+          <span>已录 <b id="elapsed">00:00</b></span>
+          <span id="rec-state">● 录音中</span>
+        </div>
+
+        <div class="studio-actions">
+          <button id="next" class="ghost">唱完了 · 下一项</button>
+          <button id="stop" class="primary">结束并上传</button>
+        </div>
+        <p class="record-hint">提示会自动切换；唱错、咳嗽没关系，后面可以剪掉。</p>
+      </section>
+
+      <section id="done" class="record-card" hidden>
+        <p class="eyebrow">SAVED</p>
+        <h1>已经保存到本地</h1>
+        <p class="lead" id="done-text">正在处理…</p>
+        <div class="done-stats" id="done-stats"></div>
+        <p class="record-error" id="done-warn" hidden></p>
+        <p class="record-hint">可以关闭这个页面。回到 Singer 主界面即可看到新的音色和训练包。</p>
+      </section>
+
+      <section id="failed" class="record-card" hidden>
+        <p class="eyebrow">ERROR</p>
+        <h1>上传没有完成</h1>
+        <p class="lead" id="failed-text"></p>
+        <button id="retry" class="primary">重试上传</button>
+      </section>
+    </main>
+
+    <footer class="record-footer">
+      <span>本地保存 · 不经云端存储</span>
+      <span>仅限本人或已授权声音</span>
+    </footer>
+
+    <script src="/static/record.js"></script>
+  </body>
+</html>

@@ -126,8 +126,10 @@ def _fade(clip: np.ndarray, sr: int) -> np.ndarray:
 
 def _warn(report: dict) -> list[str]:
     warnings: list[str] = []
-    if report["source_seconds"] < 600:
-        warnings.append("素材总时长不足 10 分钟，训练相似度可能有限。")
+    if report["source_seconds"] < 300:
+        warnings.append("素材总时长不足 5 分钟，训练效果会很有限。")
+    elif report["source_seconds"] < 600:
+        warnings.append("素材少于 10 分钟，可以训练；10–15 分钟效果更稳。")
     if report["clip_count"] < 50:
         warnings.append("切片少于 50 段，建议补充更多素材。")
     if report["clipped_ratio"] > 0.001:

@@ -1,0 +1,232 @@
+.record-page {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+.record-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 16px 20px;
+  border-bottom: 1px solid var(--line);
+}
+
+.record-main {
+  flex: 1;
+  width: min(680px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 32px 0 40px;
+}
+
+.record-card {
+  background: linear-gradient(180deg, rgba(28, 28, 38, 0.94), rgba(21, 21, 29, 0.94));
+  border: 1px solid var(--line);
+  border-radius: 20px;
+  padding: 28px 24px;
+}
+
+.record-card h1 {
+  font-size: clamp(28px, 6vw, 40px);
+  letter-spacing: -0.8px;
+  margin: 0 0 12px;
+}
+
+.record-label {
+  display: grid;
+  gap: 8px;
+  margin: 22px 0 16px;
+  font-size: 13px;
+  color: var(--muted);
+}
+
+.record-label input {
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+  color: var(--text);
+  padding: 14px;
+  font-size: 16px;
+  font-family: inherit;
+  outline: none;
+}
+
+.record-label input:focus {
+  border-color: rgba(139, 108, 255, 0.7);
+  box-shadow: 0 0 0 3px rgba(139, 108, 255, 0.14);
+}
+
+.record-start {
+  width: 100%;
+  padding: 15px;
+  font-size: 16px;
+  margin-top: 18px;
+}
+
+.record-hint {
+  color: var(--muted);
+  font-size: 12px;
+  line-height: 1.7;
+  margin: 12px 0 0;
+}
+
+.record-error {
+  margin: 14px 0 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  background: rgba(255, 107, 129, 0.1);
+  border: 1px solid rgba(255, 107, 129, 0.35);
+  color: #ffb3bf;
+  font-size: 13px;
+  line-height: 1.6;
+}
+
+.studio-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 22px;
+}
+
+.stage-badge {
+  font-size: 12px;
+  color: var(--accent-2);
+  background: rgba(94, 234, 212, 0.1);
+  border: 1px solid rgba(94, 234, 212, 0.25);
+  padding: 5px 10px;
+  border-radius: 999px;
+}
+
+.step-count {
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.record-prompt {
+  font-size: clamp(22px, 5vw, 30px);
+  line-height: 1.45;
+  font-weight: 600;
+  margin: 0 0 20px;
+  min-height: 88px;
+}
+
+.countdown {
+  font-size: 64px;
+  font-weight: 700;
+  line-height: 1;
+  letter-spacing: -2px;
+  color: var(--accent);
+  font-variant-numeric: tabular-nums;
+  margin-bottom: 20px;
+}
+
+.record-progress {
+  height: 6px;
+  background: var(--panel-2);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 18px;
+}
+
+.record-progress span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent), var(--accent-2));
+  transition: width 0.2s linear;
+}
+
+.level {
+  height: 10px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 999px;
+  overflow: hidden;
+  margin-bottom: 14px;
+}
+
+.level span {
+  display: block;
+  height: 100%;
+  width: 0;
+  background: linear-gradient(90deg, var(--accent-2), var(--accent));
+  transition: width 0.08s linear;
+}
+
+.record-meta {
+  display: flex;
+  justify-content: space-between;
+  color: var(--muted);
+  font-size: 12px;
+}
+
+.record-meta b {
+  color: var(--text);
+  font-variant-numeric: tabular-nums;
+}
+
+.studio-actions {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  margin-top: 22px;
+}
+
+.studio-actions .primary,
+.studio-actions .ghost {
+  padding: 13px 10px;
+  font-size: 14px;
+}
+
+#rec-state {
+  color: #ff9aa8;
+}
+
+#rec-state.paused {
+  color: var(--muted);
+}
+
+.done-stats {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: 10px;
+  margin-top: 20px;
+}
+
+.done-stat {
+  border: 1px solid var(--line);
+  background: rgba(13, 13, 18, 0.5);
+  border-radius: 12px;
+  padding: 14px;
+}
+
+.done-stat b {
+  display: block;
+  font-size: 22px;
+  margin-bottom: 4px;
+}
+
+.done-stat span {
+  color: var(--muted);
+  font-size: 11.5px;
+}
+
+.record-footer {
+  width: min(680px, calc(100% - 32px));
+  margin: 0 auto;
+  padding: 14px 0 26px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  justify-content: space-between;
+  gap: 12px;
+  flex-wrap: wrap;
+  color: var(--muted);
+  font-size: 11px;
+}
+
+@media (max-width: 520px) {
+  .record-card { padding: 22px 18px; }
+  .record-main { padding-top: 20px; }
+  .studio-actions { grid-template-columns: 1fr; }
+  .countdown { font-size: 54px; }
+}

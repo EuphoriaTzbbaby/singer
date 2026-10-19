@@ -351,6 +351,43 @@ async function handleListClick(event) {
   }
 }
 
+async function toggleRecordLink() {
+  const box = $("#record-link-box");
+  if (!box.hidden) {
+    box.hidden = true;
+    return;
+  }
+  try {
+    const data = await api("/api/record-link");
+    $("#record-url").value = data.url;
+    const note = $("#record-link-note");
+    if (data.localhost) {
+      note.textContent =
+        "这是本机地址，手机打不开。跨设备录音请用 HTTPS 隧道，步骤见 docs/REMOTE_RECORDING.md。";
+      note.classList.add("bad");
+    } else {
+      note.textContent = "用手机浏览器打开这个链接；录音会直接保存到这台电脑。";
+      note.classList.remove("bad");
+    }
+    box.hidden = false;
+  } catch (error) {
+    toast(error.message, true);
+  }
+}
+
+async function copyRecordUrl() {
+  const input = $("#record-url");
+  if (!input.value) return;
+  try {
+    await navigator.clipboard.writeText(input.value);
+    toast("链接已复制");
+  } catch {
+    input.select();
+    document.execCommand("copy");
+    toast("链接已复制");
+  }
+}
+
 async function init() {
   $("#voice-form").addEventListener("submit", handleVoiceSubmit);
   $("#song-form").addEventListener("submit", handleSongSubmit);
@@ -358,6 +395,8 @@ async function init() {
   $("#song-list").addEventListener("click", handleListClick);
   $("#append-input").addEventListener("change", handleAppendFiles);
   $("#model-input").addEventListener("change", handleModelFiles);
+  $("#record-link-btn").addEventListener("click", toggleRecordLink);
+  $("#copy-record-url").addEventListener("click", copyRecordUrl);
 
   await refreshHealth();
   try {

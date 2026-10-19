@@ -4,7 +4,7 @@
 
 - 音频只在本机处理，不上传云端。
 - 当前技术路线：**RVC v2**（Colab 训练音色模型 + 本地推理）。
-- 当前进度：**M0 已完成**；M1 分离/混音、M4 的素材切片/训练包/模型导入已完成，RVC 推理与任务队列开发中。
+- 当前进度：**M0 已完成**；M1 分离/混音、M4 素材切片/训练包/模型导入、手机录音页已完成，RVC 推理与任务队列开发中。
 
 ## 快速开始
 
@@ -17,11 +17,20 @@
 
 打开浏览器进入 `http://127.0.0.1:8765`：
 
-1. **我的声音**：上传 10–30 分钟干净干声，勾选授权确认。
+1. **我的声音**：上传 10–15 分钟干净干声（最低 5 分钟），勾选授权确认；也可以点「手机录音」用网址录。
 2. **准备训练**：自动切片、质检，下载训练包；按 [docs/TRAINING.md](docs/TRAINING.md) 在 Colab 训练。
 3. **导入模型**：把训练产出的 `.pth` + `.index` 导入音色。
 4. **歌曲**：上传带原唱的完整歌曲，自动转码为 44.1kHz WAV。
 5. **生成翻唱**：待 RVC 推理接入后开放。
+
+## 手机 / 远程录音
+
+Singer 自带引导式录音页：打开链接 → 跟着提示唱 → 音频自动保存到本机并切片。
+
+- **同一台 Mac**：主界面点「手机录音」，复制链接打开即可。
+- **手机 / 其他设备**：浏览器要求 HTTPS 才能用麦克风。用 `cloudflared tunnel --url http://127.0.0.1:8765` 生成临时 HTTPS 地址，再打开 `/record?token=...`。
+- 访问令牌保存在 `data/record_token.txt`，不要公开分享。
+- 完整步骤、Tailscale 方案与排错见 **[docs/REMOTE_RECORDING.md](docs/REMOTE_RECORDING.md)**。
 
 ## 命令行验证（M1）
 
@@ -46,7 +55,7 @@ RVC 训练需要 NVIDIA GPU，本机只做推理。完整步骤（录制要求�
 
 简要流程：
 
-1. 录 10–30 分钟干净清唱（内容见 [docs/RECORDING.md](docs/RECORDING.md)）→ 上传到「我的声音」。
+1. 录 10–15 分钟干净清唱（最低 5 分钟；内容见 [docs/RECORDING.md](docs/RECORDING.md)）→ 上传到「我的声音」。
 2. 「准备训练」→ 切片质检 →「下载训练包」。
 3. 在 [Applio Colab](https://colab.research.google.com/github/iahispano/applio/blob/main/assets/Applio_NoUI.ipynb) 用 T4 训练（约 1–2 小时）。
 4. 导出 `.pth` + `.index` → 在音色卡片「导入模型」。
@@ -59,10 +68,10 @@ app/
   config.py        路径与端口配置
   audio.py         ffmpeg 探测/转码
   storage.py       data/ 下的目录与 JSON 元数据
-  routers/         voices、songs API
+  routers/         voices、songs、recordings API
   pipeline/        分离、混音、训练素材切片
-  static/          原生 HTML/CSS/JS 界面
-docs/TRAINING.md   RVC 训练与模型导入完整指南
+  static/          主界面 + 手机录音页
+docs/              训练、录音、远程录音文档
 scripts/
   setup.sh         创建环境
   dev.sh           启动开发服务
@@ -88,7 +97,7 @@ MUSTDO.md          硬约束与里程碑
 ## 音频规格
 
 - 统一 44.1kHz；歌曲双声道，训练素材单声道。
-- 训练素材：无伴奏、无混响、无爆音，单人，建议 10–30 分钟。
+- 训练素材：无伴奏、无混响、无爆音，单人，建议 10–15 分钟（最低 5 分钟）。
 - 成品：WAV 16bit + MP3 320k，响度约 -14 LUFS，峰值 ≤ -1 dBTP。
 
 ## 合规
@@ -102,4 +111,6 @@ MUSTDO.md          硬约束与里程碑
 - [WORKLOG.md](WORKLOG.md)：按时间记录所有文件变更。
 - [MUSTDO.md](MUSTDO.md)：必须遵守的规则与必须完成的里程碑。
 - [docs/TRAINING.md](docs/TRAINING.md)：录制、Colab 训练、模型导入与排错。
-- [docs/RECORDING.md](docs/RECORDING.md)：录什么声音、20 分钟模板、绝对不要做的事。
+- [docs/RECORDING.md](docs/RECORDING.md)：录什么声音、10 分钟模板、绝对不要做的事。
+- [docs/RECORDING_PROMPTS.md](docs/RECORDING_PROMPTS.md)：引导录音的逐条提示语与语音教练提示词。
+- [docs/REMOTE_RECORDING.md](docs/REMOTE_RECORDING.md)：用网址在手机录音、HTTPS 隧道与安全注意事项。
