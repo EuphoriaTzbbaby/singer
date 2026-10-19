@@ -46,7 +46,7 @@ RVC 训练需要 NVIDIA GPU，本机只做推理。完整步骤（录制要求�
 
 简要流程：
 
-1. 录 10–30 分钟干净清唱 → 上传到「我的声音」。
+1. 录 10–30 分钟干净清唱（内容见 [docs/RECORDING.md](docs/RECORDING.md)）→ 上传到「我的声音」。
 2. 「准备训练」→ 切片质检 →「下载训练包」。
 3. 在 [Applio Colab](https://colab.research.google.com/github/iahispano/applio/blob/main/assets/Applio_NoUI.ipynb) 用 T4 训练（约 1–2 小时）。
 4. 导出 `.pth` + `.index` → 在音色卡片「导入模型」。
@@ -102,3 +102,4 @@ MUSTDO.md          硬约束与里程碑
 - [WORKLOG.md](WORKLOG.md)：按时间记录所有文件变更。
 - [MUSTDO.md](MUSTDO.md)：必须遵守的规则与必须完成的里程碑。
 - [docs/TRAINING.md](docs/TRAINING.md)：录制、Colab 训练、模型导入与排错。
+- [docs/RECORDING.md](docs/RECORDING.md)：录什么声音、20 分钟模板、绝对不要做的事。
