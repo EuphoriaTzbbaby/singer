@@ -32,3 +32,12 @@
   - 转换路线：RVC（Colab 训练 + 本地 MLX 推理）。
   - 歌曲类型：带原唱人声的完整歌曲，自动分离人声/伴奏后做音色转换。
   - 工具形态：本地网页应用（FastAPI + 静态前端）。
+
+### 17:09 首次提交完成，推送失败（待配置 GitHub 凭据）
+- 操作：Git 提交 / 推送
+- 文件：`WORKLOG.md`、`MUSTDO.md`、`.gitignore`
+- 说明：
+  - 本地提交成功：`5761f7d chore: 初始化工作日志、必做清单与 gitignore`（3 files, +152）。
+  - `git push -u origin main` 失败：`could not read Username for 'https://github.com': terminal prompts disabled`。
+  - 排查结果：`gh` 未安装；keychain 中无 GitHub 凭据；`~/.ssh/id_ed25519` 存在，但 `ssh -T git@github.com` 返回 `Permission denied (publickey)`，说明该公钥未注册到 GitHub 账户。
+  - 处理：保留本地提交，待用户添加 SSH 公钥或配置 PAT 后重试；后续达到里程碑会继续自动提交并推送。
